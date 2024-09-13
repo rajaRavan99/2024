@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "897961455795",
+    "project_id": "flutreal-66e36",
+    "storage_bucket": "flutreal-66e36.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:897961455795:android:2262d368caa61a602c00c6",
+        "android_client_info": {
+          "package_name": "com.example.flu"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCg2M6rXA38054yDmlVCoXelYektCBWOTE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
