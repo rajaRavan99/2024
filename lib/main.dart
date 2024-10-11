@@ -1,12 +1,35 @@
-import 'package:flu/firebase_options.dart';
+import 'package:flu/Firebase_Realtime_Db/screen/realtime_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+import 'Cloud_firestore/provider/user_provider.dart';
+import 'Firebase_Realtime_Db/provider/provider_file.dart';
+import 'google_sign_in/Screen.dart';
+import 'google_sign_in/google_sign_provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  initializeFirebase();
-  runApp(const MyApp());
+  try {
+    await initializeFirebase();
+  } catch (e) {
+    if (e.toString().contains('duplicate-app')) {
+      // Firebase is already initialized, do nothing
+    } else {
+      // Handle other initialization errors
+      print('Firebase initialization error: $e');
+    }
+  }
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => ItemProvider()),
+        ChangeNotifierProvider(create: (_) => SignInProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -22,59 +45,16 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      home:  SignInScreen(),
     );
   }
 }
 
 
 initializeFirebase() async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
+  await Firebase.initializeApp(options: const FirebaseOptions(apiKey: 'AIzaSyBb5e2j8blwx3WQFRFZ2POj8GmaKgQZ0EQ',
+    appId: '1:864225195858:android:a1f6e78333db2aba82ec8b',
+    messagingSenderId: '864225195858',
+    projectId: 'chat-app-ff6a8',
+    storageBucket: 'chat-app-ff6a8.appspot.com',));
 }
