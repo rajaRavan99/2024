@@ -1,103 +1,152 @@
+// ignore_for_file: unused_import
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'user_provider.dart';
 
-import '../Model/model.dart';
-import '../provider/user_provider.dart';
-
-class UserScreen extends StatelessWidget {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
+class UploadFormScreen extends StatelessWidget {
+  const UploadFormScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    var userProvider = Provider.of<UserProvider>(context);
+    return ChangeNotifierProvider(
+      create: (_) => UploadFormProvider(),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Upload Data')),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Consumer<UploadFormProvider>(
+            builder: (context, formProvider, child) {
+              return Form(
+                child: Column(
+                  children: <Widget>[
+                    // Text input field
+                    TextFormField(
+                      controller: formProvider.textController,
+                      decoration:
+                          const InputDecoration(labelText: 'Enter text'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter some text';
+                        }
+                        return null;
+                      },
+                    ),
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Users'),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: userProvider.users.length,
-              itemBuilder: (context, index) {
-                var user = userProvider.users[index];
-                return ListTile(
-                  title: Text(user.name),
-                  subtitle: Text('Age: ${user.age}'),
-                  trailing: IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () {
-                      userProvider.deleteUser(user.id);
-                    },
-                  ),
-                  onTap: () {
-                    _nameController.text = user.name;
-                    _ageController.text = user.age.toString();
-                    _showUserDialog(context, userProvider, user: user);
-                  },
-                );
-              },
-            ),
-          ),
-          FloatingActionButton(
-            child: Icon(Icons.add),
-            onPressed: () {
-              _nameController.clear();
-              _ageController.clear();
-              _showUserDialog(context, userProvider);
+                    // Date picker row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            formProvider.selectedDate == null
+                                ? 'No date selected'
+                                : 'Selected date: ${formProvider.selectedDate!.toLocal()}',
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => _selectDate(context, formProvider),
+                          child: const Text('Select Date'),
+                        ),
+                      ],
+                    ),
+
+                    // Location picker row
+                    Row(
+                      children: [
+                        // Expanded(
+                        //   child: Text(
+                        //     formProvider.selectedLocation == null
+                        //         ? 'No location selected'
+                        //         : 'Location: (${formProvider.selectedLocation!.latitude}, ${formProvider.selectedLocation!.longitude})',
+                        //   ),
+                        // ),
+                        TextButton(
+                          onPressed: () => formProvider.setLocation(),
+                          child: const Text('Select Location'),
+                        ),
+                      ],
+                    ),
+
+                    // Image picker buttons
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        // ElevatedButton(
+                        //   onPressed: () => formProvider.pickImage(ImageSource.camera),
+                        //   child: Text('Camera'),
+                        // ),
+                        // ElevatedButton(
+                        //   onPressed: () => formProvider.pickImage(ImageSource.gallery),
+                        //   child: Text('Gallery'),
+                        // ),
+                      ],
+                    ),
+
+                    // Image preview
+                    formProvider.selectedImage != null
+                        ? Image.file(formProvider.selectedImage!, height: 100)
+                        : Container(),
+
+                    const SizedBox(height: 20),
+
+                    // Upload button
+                    ElevatedButton(
+                      onPressed: () => _uploadData(context, formProvider),
+                      child: const Text('Upload'),
+                    ),
+                  ],
+                ),
+              );
             },
-          )
-        ],
+          ),
+        ),
       ),
     );
   }
 
-  void _showUserDialog(BuildContext context, UserProvider userProvider, {User? user}) {
-    showDialog(
+  // Date picker
+  Future<void> _selectDate(
+      BuildContext context, UploadFormProvider provider) async {
+    final DateTime? picked = await showDatePicker(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(user == null ? 'Add User' : 'Update User'),
-          content: Column(
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'Name'),
-              ),
-              TextField(
-                controller: _ageController,
-                decoration: InputDecoration(labelText: 'Age'),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                if (user == null) {
-                  // Add new user
-                  userProvider.addUser(User(
-                    id: '', // Firestore will generate ID
-                    name: _nameController.text,
-                    age: int.parse(_ageController.text),
-                  ));
-                } else {
-                  // Update existing user
-                  userProvider.updateUser(User(
-                    id: user.id,
-                    name: _nameController.text,
-                    age: int.parse(_ageController.text),
-                  ));
-                }
-                Navigator.of(context).pop();
-              },
-              child: Text(user == null ? 'Add' : 'Update'),
-            )
-          ],
-        );
-      },
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
     );
+    if (picked != null) {
+      provider.setDate(picked);
+    }
+  }
+
+  // Upload data to Firebase
+  Future<void> _uploadData(
+      BuildContext context, UploadFormProvider formProvider) async {
+    // if (formProvider.textController.text.isEmpty || formProvider.selectedDate == null || formProvider.selectedLocation == null || formProvider.selectedImage == null) {
+    //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
+    //   return;
+    // }
+
+    try {
+      // final storageRef = FirebaseStorage.instance
+      //     .ref()
+      //     .child('uploads/${DateTime.now().toString()}.png');
+      // await storageRef.putFile(formProvider.selectedImage!);
+      // final downloadUrl = await storageRef.getDownloadURL();
+      //
+      // FirebaseFirestore.instance.collection('uploads').add({
+      //   'text': formProvider.textController.text,
+      //   'date': formProvider.selectedDate!.toIso8601String(),
+      //   'location': GeoPoint(formProvider.selectedLocation!.latitude, formProvider.selectedLocation!.longitude),
+      //   'image_url': downloadUrl,
+      // });
+
+      formProvider.clearForm();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Upload successful')));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Failed to upload data')));
+    }
   }
 }

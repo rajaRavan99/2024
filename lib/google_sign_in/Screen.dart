@@ -5,6 +5,8 @@ import 'package:sign_in_button/sign_in_button.dart';
 import 'google_sign_provider.dart';
 
 class SignInScreen extends StatelessWidget {
+  const SignInScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final signInProvider = Provider.of<SignInProvider>(context);
@@ -32,7 +34,9 @@ class SignInScreen extends StatelessWidget {
                   ),
           ),
 
-          const SizedBox(height: 10.0,),
+          const SizedBox(
+            height: 10.0,
+          ),
 
           SignInButton(
             Buttons.facebook,

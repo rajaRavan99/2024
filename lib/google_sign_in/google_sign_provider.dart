@@ -16,19 +16,21 @@ class SignInProvider with ChangeNotifier {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return; // The user canceled the sign-in
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
       final User? user = userCredential.user;
-      if(user != null)
-        {
-          Get.to(MyHomePage());
-        }
+      if (user != null) {
+        Get.to(MyHomePage());
+        // Get.to(UserScreen());
+      }
       notifyListeners();
     } catch (e) {
       print(e);
@@ -40,7 +42,8 @@ class SignInProvider with ChangeNotifier {
 
     if (result.status == LoginStatus.success) {
       // Get the user's credentials
-      final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken!.tokenString);
+      final OAuthCredential credential =
+          FacebookAuthProvider.credential(result.accessToken!.tokenString);
       return await FirebaseAuth.instance.signInWithCredential(credential);
     } else {
       // Handle error or cancellation
@@ -49,8 +52,9 @@ class SignInProvider with ChangeNotifier {
     }
   }
 
-
   Future<User?> signInWithGitHub() async {
+    return null;
+
     // // Replace with your GitHub OAuth credentials
     // final GitHubAuthProvider githubProvider = GitHubAuthProvider();
     //
@@ -60,8 +64,6 @@ class SignInProvider with ChangeNotifier {
     //
     // return await FirebaseAuth.instance.signInWithProvider(githubProvider);
   }
-
-
 
   Future<void> signOut() async {
     await _auth.signOut();

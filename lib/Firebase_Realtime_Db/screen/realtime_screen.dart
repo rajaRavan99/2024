@@ -6,6 +6,8 @@ import '../provider/provider_file.dart';
 class MyHomePage extends StatelessWidget {
   final TextEditingController _controller = TextEditingController();
 
+  MyHomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final itemProvider = Provider.of<ItemProvider>(context);

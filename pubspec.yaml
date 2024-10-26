@@ -45,6 +45,13 @@ dependencies:
   firebase_auth:
   flutter_facebook_auth:
   sign_in_button:
+  firebase_storage:
+  image_picker:
+  intl:
+  permission_handler:
+  google_maps_flutter: ^2.7.0
+  geolocator:
+  win32: ^5.6.1
 
 dev_dependencies:
   flutter_test:
